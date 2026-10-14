@@ -13,24 +13,23 @@ Bring macOS Calendar.app events into the Org agenda via
 ## Installation
 
 ```elisp
-;; With use-package + straight
 (use-package ical-buddy
-  :straight (:host github :repo "adithyaov/ical-buddy.el"))
+  :straight (ical-buddy :host github :repo "adithyaov/ical-buddy.el")
+  :config
+  (setq ical-buddy-org-file "~/org/calendar.org")
+  (setq ical-buddy-calendars '("work@example.com" "personal@example.com"))
+
+  (add-to-list 'org-agenda-files ical-buddy-org-file)
+
+  (cl-flet ((refresh (&rest _)
+               (ical-buddy-refresh (ical-buddy-date-string 0)
+                                   (ical-buddy-date-string 7))))
+    (add-hook 'org-agenda-mode-hook #'refresh)
+    (advice-add 'org-agenda-redo :before #'refresh)))
 ```
 
-Or clone the repo and add it to your `load-path`.
-
-## Setup
-
-```elisp
-(setq ical-buddy-org-file "~/org/calendar.org")
-
-;; Optional: restrict to specific calendars (run `icalBuddy calendars` to list them)
-(setq ical-buddy-calendars '("Work" "Personal"))
-
-;; Optional: if icalBuddy is not on Emacs's PATH
-(setq ical-buddy-executable "/opt/homebrew/bin/icalBuddy")
-```
+Or clone the repo, add it to your `load-path`, and use the `:config` block above
+without the `:straight` line.
 
 ## Usage
 
@@ -46,27 +45,8 @@ Or clone the repo and add it to your `load-path`.
                     (ical-buddy-date-string 7))
 ```
 
-Or call `M-x ical-buddy-refresh` interactively — it opens Org's calendar picker
+Or call `M-x ical-buddy-refresh` interactively. It opens Org's calendar picker
 for the start and end dates.
-
-### Add to the Org agenda
-
-```elisp
-(add-to-list 'org-agenda-files "~/org/calendar.org")
-```
-
-### Auto-refresh with the agenda
-
-This refreshes before the agenda opens and before every manual refresh (`g`):
-
-```elisp
-(defun my/ical-buddy-refresh (&rest _)
-  (ical-buddy-refresh (ical-buddy-date-string 0)
-                      (ical-buddy-date-string 7)))
-
-(add-hook 'org-agenda-mode-hook #'my/ical-buddy-refresh)
-(advice-add 'org-agenda-redo :before #'my/ical-buddy-refresh)
-```
 
 ## Output format
 
